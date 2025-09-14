@@ -1,29 +1,23 @@
 const express = require('express');
-const { createDynamoClient } = require('./src/aws');
+const { processOrderAnalysis } = require('./src/orchestrator/analysis-orchestrator');
 
 const app = express();
-const port = process.env.PORT || 8080;
-
 app.use(express.json());
 
-app.get('/health', (_req, res) => {
-  res.status(200).json({ status: 'ok' });
-});
+app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
-
-app.get('/diag/dynamodb', async (_req, res) => {
+app.post('/analysis', async (req, res) => {
   try {
-    const client = createDynamoClient();
-
-    const out = await client.listTables({});
-    res.json({ ok: true, tables: out.TableNames || [] });
+    const { customerId, amount, currency, merchantId } = req.body || {};
+    if (!customerId || typeof amount !== 'number') {
+      return res.status(400).json({ error: 'customerId (string) and amount (number) are required' });
+    }
+    const out = await processOrderAnalysis({ customerId, amount, currency, merchantId });
+    res.json(out);
   } catch (e) {
-    res.status(500).json({ ok: false, error: String(e) });
+    res.status(500).json({ error: String(e) });
   }
 });
-
-app.listen(port, () => {
-  console.log(`[app] listening on :${port}`);
-});
-
-module.exports = app;
+ 
+const port = process.env.PORT || 8080;
+app.listen(port, () => console.log(`[app] listening on :${port}`));

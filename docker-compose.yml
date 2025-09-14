@@ -2,11 +2,28 @@ version: "3.9"
 services:
   localstack:
     image: localstack/localstack:latest
-    ports:
-      - "4566:4566"
+    ports: ["4566:4566"]
     environment:
-      - SERVICES=dynamodb,cloudwatch,logs,iam,sts
+      - SERVICES=dynamodb
       - DEBUG=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 40
+
+  seeder:
+    build: ./app              
+    command: sh -lc "node scripts/setup.js && node scripts/seed.js"
+    environment:
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=mock
+      - AWS_SECRET_ACCESS_KEY=mock
+      - FOS_TABLE=orchestrator_enrichment
+    depends_on:
+      localstack:
+        condition: service_healthy
 
   app:
     build: ./app
@@ -15,8 +32,9 @@ services:
       - AWS_REGION=us-east-1
       - AWS_ACCESS_KEY_ID=mock
       - AWS_SECRET_ACCESS_KEY=mock
+      - FOS_TABLE=orchestrator_enrichment
       - PORT=8080
-    ports:
-      - "8080:8080"
+    ports: ["8080:8080"]
     depends_on:
-      - localstack
+      seeder:
+        condition: service_completed_successfully
