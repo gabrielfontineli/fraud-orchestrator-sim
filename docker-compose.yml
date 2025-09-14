@@ -1,0 +1,22 @@
+version: "3.9"
+services:
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=dynamodb,cloudwatch,logs,iam,sts
+      - DEBUG=1
+
+  app:
+    build: ./app
+    environment:
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=mock
+      - AWS_SECRET_ACCESS_KEY=mock
+      - PORT=8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - localstack

@@ -1,0 +1,51 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Logs
+logs
+*.log
+*.out
+*.err
+
+# Runtime data
+pids
+*.pid
+*.seed
+.pid.lock
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Build
+dist/
+build/
+
+# Dependency directories
+.yarn/
+.pnp/
+
+# Misc
+.env
+.env.*
+.DS_Store
+*.tgz
+
+# IDE files
+.vscode/
+.idea/
+
+#  Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+crash.log
+override.tf
+override.tf.json
+# MacOS
+.DS_Store
